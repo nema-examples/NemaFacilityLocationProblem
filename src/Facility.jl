@@ -17,9 +17,11 @@ struct Facility{C<:Coordinate,TC<:TransportationCosts}
 
     coordinate::C
     maximum_capacity::Float64
+    is_already_in_operation::Bool
 
-    cost_yearly_lease::Float64
+    yearly_operating_costs::Float64
     cost_startup::Float64
+    cost_shutdown::Float64
     transportation_costs::TC
 
 end
@@ -27,16 +29,20 @@ end
 function Facility(;
     coordinate::Coordinate,
     maximum_capacity::Float64,
-    cost_yearly_lease::Float64,
-    cost_startup::Float64,
-    transportation_costs::TransportationCosts
+    yearly_operating_costs::Float64,
+    transportation_costs::TransportationCosts,
+    cost_startup::Float64=0.0,
+    cost_shutdown::Float64=0.0,
+    is_already_in_operation::Bool=false
 )
 
     return Facility(
         coordinate,
         maximum_capacity,
-        cost_yearly_lease,
+        is_already_in_operation,
+        yearly_operating_costs,
         cost_startup,
+        cost_shutdown,
         transportation_costs,
     )
 

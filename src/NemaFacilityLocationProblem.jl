@@ -1,7 +1,21 @@
 module NemaFacilityLocationProblem
 
 using Distances: haversine
-using JuMP
+using JuMP:
+    Model,
+    @variable,
+    set_lower_bound,
+    @constraint,
+    @objective,
+    optimize!,
+    termination_status,
+    value,
+    objective_value,
+    set_silent,
+    MOI
+
+using Random: randstring
+
 import GLPK
 
 include("Coordinate.jl")
@@ -12,6 +26,9 @@ export Facility, SimpleTransportationCosts
 
 include("Customer.jl")
 export Customer
+
+include("CompanyInformation.jl")
+export CompanyInformation
 
 include("solve_flp.jl")
 export solve_flp
