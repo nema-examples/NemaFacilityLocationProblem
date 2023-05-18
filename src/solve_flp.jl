@@ -1,5 +1,6 @@
 struct CustomerSolution
 
+    ID::String
     volume_from_facilities::Vector{Float64}
 
 end
@@ -7,10 +8,12 @@ end
 struct CustomerSolutionSingleYear
 
     customers::Vector{CustomerSolution}
+    year::Int64
 
 end
 
 struct FacilitySolution
+    ID::String
     is_active::Bool
     used_capacity::Float64
     volume_to_customers::Vector{Float64}
@@ -19,6 +22,7 @@ end
 struct FacilitySolutionSingleYear
 
     facilities::Vector{FacilitySolution}
+    year::Int64
 
 end
 
@@ -52,7 +56,9 @@ function solve_flp(
     ## set up design variables
     number_facilities = length(facilities)
     number_customers_per_year = [length(cd.customers) for cd in customer_demand_per_year]
+    customer_names = [[c.ID for c in cd.customers] for cd in customer_demand_per_year]
     number_years = length(customer_demand_per_year)
+    years = [d.year for d in customer_demand_per_year]
 
     @variable(model, volume_served_facility[1:number_facilities, 1:number_years] >= 0.0)
     @variable(model, is_facility_active[1:number_facilities, 1:number_years], Bin)
@@ -101,10 +107,12 @@ function solve_flp(
     ## add costs
     discount_rate = company_info.discount_rate
 
-    total_facility_operating_costs = sum(
+    facility_operating_costs = [
         is_facility_active[ii, idx_year] * facilities[ii].yearly_operating_costs / (1 + discount_rate)^(idx_year - 1)
         for ii in 1:number_facilities, idx_year in 1:number_years
-    )
+    ]
+    total_facility_operating_costs = sum(facility_operating_costs)
+
     transportation_costs_per_year = [sum(
         volume_between_customer_and_facility[idx_year][ii, jj] * compute_transportation_costs(facilities[ii], distance_customer_and_facility_per_year[idx_year][ii, jj]) /
         (1 + discount_rate)^(idx_year - 1)
@@ -142,20 +150,24 @@ function solve_flp(
     sol_volume_between_customer_and_facility = [value.(v) for v in volume_between_customer_and_facility]
     customer_sols = [
         CustomerSolutionSingleYear([
-            CustomerSolution(
-                sol_volume_between_customer_and_facility[idx_year][:, jj],
-            ) for jj in 1:number_customers_per_year[idx_year]
-        ]) for idx_year in 1:number_years
+                CustomerSolution(
+                    customer_name,
+                    sol_volume_between_customer_and_facility[idx_year][:, jj],
+                ) for (jj, customer_name) in enumerate(current_year_customer_names)
+            ],
+            years[idx_year]) for (idx_year, current_year_customer_names) in zip(1:number_years, customer_names)
     ]
 
     facility_sols = [
         FacilitySolutionSingleYear([
-            FacilitySolution(
-                value(is_facility_active[ii, idx_year]) == 1.0,
-                sum(sol_volume_between_customer_and_facility[idx_year][ii, :]),
-                sol_volume_between_customer_and_facility[idx_year][ii, :]
-            ) for ii in 1:number_facilities
-        ]) for idx_year in 1:number_years
+                FacilitySolution(
+                    facilities[ii].ID,
+                    value(is_facility_active[ii, idx_year]) == 1.0,
+                    sum(sol_volume_between_customer_and_facility[idx_year][ii, :]),
+                    sol_volume_between_customer_and_facility[idx_year][ii, :]
+                ) for ii in 1:number_facilities
+            ],
+            years[idx_year]) for idx_year in 1:number_years
     ]
 
     sol_total_costs = value(total_cost)
@@ -198,7 +210,7 @@ function solve_flp(facilities::Vector{<:Facility}, customers::Vector{<:Customer}
 
     # single year
 
-    yearly_customer_demand = [YearlyCustomerDemand(customers)]
+    yearly_customer_demand = [YearlyCustomerDemand(customers, 0)]
 
     # if only one year, discount rate does not matter
     company_info = CompanyInformation(0.0)

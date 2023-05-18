@@ -20,6 +20,12 @@ struct CoordinateLatLong <: Coordinate
 
 end
 
+function CoordinateLatLong(; latitude::Float64, longitude::Float64)
+
+    CoordinateLatLong(latitude, longitude)
+
+end
+
 function compute_distance_in_m(x1::CoordinateLatLong, x2::CoordinateLatLong)
 
     return haversine([x1.longitude, x1.latitude], [x2.longitude, x2.latitude], 6371.0e3)

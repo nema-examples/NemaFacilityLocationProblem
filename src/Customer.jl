@@ -6,10 +6,11 @@ struct Customer{C<:Coordinate}
 
 end
 
-Customer(; coordinate::Coordinate, demand::Float64, ID::String=randstring(5)) = Customer(ID, coordinate, demand)
+Customer(; coordinate::Coordinate, demand::Union{Float64,Int64}, ID::String=randstring(5)) = Customer(ID, coordinate, Float64(demand))
 
 struct YearlyCustomerDemand{C<:Customer}
 
     customers::Vector{C}
+    year::Int64
 
 end

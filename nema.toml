@@ -1,0 +1,4 @@
+Name = 'NemaFacilityLocationProblem'
+Uuid = '139558ca-173a-4441-81cb-fa3a212d2517'
+Description = 'Core code used to solving facility location problems.'
+Language = 'Julia'

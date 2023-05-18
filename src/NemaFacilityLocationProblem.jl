@@ -22,10 +22,10 @@ include("Coordinate.jl")
 export Coordinate2D, CoordinateLatLong
 
 include("Facility.jl")
-export Facility, SimpleTransportationCosts
+export Facility, SimpleTransportationCosts, LocalVsNationalTransportationCosts
 
 include("Customer.jl")
-export Customer
+export Customer, YearlyCustomerDemand
 
 include("CompanyInformation.jl")
 export CompanyInformation

@@ -27,10 +27,20 @@ function test_coordinate_lat_long()
 
 end
 
+function test_actual_cities()
+
+    c1 = CoordinateLatLong(41.8781, 87.6298) # chicago
+    c2 = CoordinateLatLong(25.7617, 80.1918) # miami
+
+    @test NemaFacilityLocationProblem.compute_distance_in_m(c1, c2) ≈ 1913e3 rtol = 0.02
+
+end
+
 
 @testset "Coordinates" begin
 
     test_coordinate_2D()
     test_coordinate_lat_long()
+    test_actual_cities()
 
 end
